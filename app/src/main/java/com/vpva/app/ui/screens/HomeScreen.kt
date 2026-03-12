@@ -38,6 +38,7 @@ fun HomeScreen(
 
     val wakeTime by repo.wakeTimeFlow.collectAsState(initial = null)
     val config by repo.configFlow.collectAsState(initial = ScheduleConfig())
+    val notificationsEnabled by repo.notificationsEnabledFlow.collectAsState(initial = true)
 
     var showTimePicker by remember { mutableStateOf(false) }
     var events by remember { mutableStateOf<List<BabyEvent>>(emptyList()) }
@@ -166,7 +167,11 @@ fun HomeScreen(
                             LocalTime.of(h, m), config
                         )
                         events = newEvents
-                        NotificationScheduler.scheduleAll(context, newEvents)
+                        if (notificationsEnabled) {
+                            NotificationScheduler.scheduleAll(context, newEvents)
+                        } else {
+                            NotificationScheduler.cancelAll(context, newEvents.size)
+                        }
                     }
                     showTimePicker = false
                 }) { Text("OK") }

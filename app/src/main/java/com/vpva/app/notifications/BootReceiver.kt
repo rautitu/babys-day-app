@@ -18,6 +18,8 @@ class BootReceiver : BroadcastReceiver() {
 
         runBlocking {
             val repo = PreferencesRepository(context)
+            val enabled = repo.notificationsEnabledFlow.first()
+            if (!enabled) return@runBlocking
             val wakeTime = repo.wakeTimeFlow.first() ?: return@runBlocking
             val config = repo.configFlow.first()
             val events = ScheduleCalculator.calculate(
