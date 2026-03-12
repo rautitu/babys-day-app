@@ -22,6 +22,7 @@ fun SettingsScreen(onBack: () -> Unit) {
     val repo = remember { PreferencesRepository(context) }
     val scope = rememberCoroutineScope()
     val config by repo.configFlow.collectAsState(initial = ScheduleConfig())
+    val notificationsEnabled by repo.notificationsEnabledFlow.collectAsState(initial = true)
 
     var awakeWindow by remember(config) { mutableIntStateOf(config.awakeWindowMinutes) }
     var napDuration by remember(config) { mutableIntStateOf(config.napDurationMinutes) }
@@ -51,6 +52,23 @@ fun SettingsScreen(onBack: () -> Unit) {
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Notifications toggle
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("🔔 Ilmoitukset", style = MaterialTheme.typography.bodyLarge)
+                Switch(
+                    checked = notificationsEnabled,
+                    onCheckedChange = { enabled ->
+                        scope.launch { repo.saveNotificationsEnabled(enabled) }
+                    }
+                )
+            }
+
+            HorizontalDivider()
+
             SettingSlider(
                 label = "☀️ Valveillaoloaika",
                 value = awakeWindow,

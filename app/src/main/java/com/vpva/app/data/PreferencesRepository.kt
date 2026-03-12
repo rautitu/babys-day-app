@@ -1,6 +1,7 @@
 package com.vpva.app.data
 
 import android.content.Context
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -22,6 +23,7 @@ class PreferencesRepository(private val context: Context) {
         val NAPS_PER_DAY = intPreferencesKey("naps_per_day")
         val BEDTIME_HOUR = intPreferencesKey("bedtime_hour")
         val BEDTIME_MINUTE = intPreferencesKey("bedtime_minute")
+        val NOTIFICATIONS_ENABLED = booleanPreferencesKey("notifications_enabled")
     }
 
     data class WakeTime(val hour: Int, val minute: Int)
@@ -30,6 +32,16 @@ class PreferencesRepository(private val context: Context) {
         val h = prefs[Keys.WAKE_HOUR]
         val m = prefs[Keys.WAKE_MINUTE]
         if (h != null && m != null) WakeTime(h, m) else null
+    }
+
+    val notificationsEnabledFlow: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[Keys.NOTIFICATIONS_ENABLED] ?: true
+    }
+
+    suspend fun saveNotificationsEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.NOTIFICATIONS_ENABLED] = enabled
+        }
     }
 
     val configFlow: Flow<ScheduleConfig> = context.dataStore.data.map { prefs ->
